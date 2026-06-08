@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca Digital Premium</title>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+    <style>
+        :root { --bg: #0a0a0a; --surface: #141414; --accent: #3498db; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        
+        .search-container { position: sticky; top: 0; padding: 20px 0; z-index: 100; background: rgba(10,10,10,0.95); }
+        #searchBar { width: 100%; max-width: 600px; padding: 15px; border-radius: 25px; border: 1px solid #444; background: #1a1a1a; color: white; display: block; margin: auto; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; margin-top: 30px; }
+        .card { background: var(--surface); border-radius: 20px; overflow: hidden; border: 1px solid #222; transition: 0.3s; padding: 20px; }
+        .card:hover { border-color: var(--accent); }
+        
+        .media-container { width: 100%; height: 350px; position: relative; border-radius: 12px; overflow: hidden; margin-bottom: 15px; }
+        .media-container img { width: 100%; height: 100%; object-fit: cover; position: absolute; transition: opacity 1s ease-in-out; }
+        .img-hide { opacity: 0; }
+        .img-show { opacity: 1; }
+
+        .info { text-align: center; }
+        .frase { font-style: italic; font-size: 1.1em; margin-bottom: 15px; color: #ddd; height: 3em; overflow: hidden; }
+        .autor { font-weight: bold; color: var(--accent); margin: 0; }
+        .oficio { color: #888; font-style: italic; margin-bottom: 10px; font-size: 0.9em; }
+        .libro { font-size: 1.2em; font-weight: 600; margin: 5px 0; }
+        .fechas { font-size: 0.85em; color: #777; }
+    </style>
+</head>
+<body>
+
+<div class="search-container">
+    <input type="text" id="searchBar" placeholder="Buscar por autor, libro, frase o categoría...">
+</div>
+
+<main class="grid" id="libraryGrid"></main>
+
+<script>
+    const URL = "https://opensheet.elk.sh/1lmI_Lrc07sqcBl9Y5d5R8Sj4Tk-bE2noh7pqfbXtAmg/book";
+    let allBooks = [];
+    let fuse;
+
+    async function init() {
+        try {
+            const res = await fetch(URL);
+            allBooks = await res.json();
+            fuse = new Fuse(allBooks, { keys: ['libro', 'autor', 'frase', 'categoria', 'oficio'], threshold: 0.3 });
+            render(allBooks);
+        } catch (e) {
+            document.getElementById('libraryGrid').innerHTML = '<p style="text-align:center">Error al cargar datos. Verifica la conexión.</p>';
+        }
+    }
+
+    function render(data) {
+        const grid = document.getElementById('libraryGrid');
+        grid.innerHTML = '';
+        
+        data.forEach((b, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="media-container" id="media-${index}">
+                    <img src="${b.foto_libro}" class="img-show" alt="libro">
+                    <img src="${b.foto_autor}" class="img-hide" alt="autor">
+                </div>
+                <div class="info">
+                    <p class="frase">"${b.frase}"</p>
+                    <p class="autor">${b.autor}</p>
+                    <p class="oficio">${b.oficio || '---'}</p>
+                    <p class="libro">${b.libro}</p>
+                    <p class="fechas">${b.nacimiento} - ${b.fallecimiento || 'Presente'}</p>
+                </div>
+            `;
+            grid.appendChild(card);
+            
+            // Alternancia de imágenes cada 10 seg
+            let toggle = true;
+            setInterval(() => {
+                const container = document.getElementById(`media-${index}`);
+                if (container) {
+                    const imgs = container.querySelectorAll('img');
+                    toggle = !toggle;
+                    imgs[0].className = toggle ? 'img-show' : 'img-hide';
+                    imgs[1].className = toggle ? 'img-hide' : 'img-show';
+                }
+            }, 10000);
+        });
+    }
+
+    document.getElementById('searchBar').oninput = (e) => {
+        const val = e.target.value;
+        render(val ? fuse.search(val).map(r => r.item) : allBooks);
+    };
+
+    init();
+</script>
+</body>
+</html>
