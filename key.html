@@ -37,6 +37,100 @@
             margin: 0 auto;
         }
 
+        /* Login Screen */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 48px;
+            padding: 48px 40px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .login-card h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .login-card p {
+            color: var(--muted);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 28px;
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .login-input:focus {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            border-radius: 28px;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 12px;
+            display: none;
+        }
+
         /* Header */
         .header {
             text-align: center;
@@ -154,7 +248,7 @@
             font-family: monospace;
         }
 
-        /* Grid de iconos - SOLO se muestran los que tienen contenido */
+        /* Grid de iconos - versión discreta: sin preview de valores sensibles */
         .fields-grid {
             display: flex;
             flex-wrap: wrap;
@@ -201,37 +295,45 @@
             color: var(--muted);
         }
 
-        .field-value-preview {
-            font-size: 11px;
+        /* Discreción total: no mostramos ni previews, solo un placeholder */
+        .field-placeholder {
+            font-size: 10px;
             font-family: monospace;
-            color: #cbd5e1;
-            background: rgba(0,0,0,0.5);
+            color: #475569;
+            background: rgba(0,0,0,0.4);
             padding: 4px 10px;
             border-radius: 30px;
-            max-width: 140px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            letter-spacing: 0.3px;
         }
 
+        /* Toast discreto */
         .toast {
             position: fixed;
-            bottom: 28px;
+            bottom: 30px;
             left: 50%;
-            transform: translateX(-50%);
-            background: #1e293b;
+            transform: translateX(-50%) translateY(20px);
+            background: #10b981;
             backdrop-filter: blur(12px);
-            border: 1px solid #3b82f6;
-            padding: 12px 28px;
-            border-radius: 60px;
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            padding: 10px 20px;
+            border-radius: 40px;
             display: none;
             z-index: 1000;
             font-weight: 500;
-            font-size: 14px;
+            font-size: 13px;
             color: white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            opacity: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            display: flex;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
         }
 
         .status-msg {
@@ -243,38 +345,94 @@
             border-radius: 32px;
         }
 
+        .main-content {
+            display: none;
+        }
+
         @media (max-width: 650px) {
             body { padding: 20px 15px; }
             .fields-grid { gap: 12px; justify-content: center; }
             .field-item { padding: 8px 16px; min-width: 80px; }
             .field-icon { font-size: 24px; }
             .title { font-size: 1.1rem; }
-            .field-value-preview { max-width: 100px; font-size: 10px; }
+            .toast { font-size: 11px; padding: 8px 16px; white-space: nowrap; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <div class="avatar">🔐</div>
-        <h1>Vault Pro · Credenciales</h1>
-        <p>Haz clic sobre cualquier icono para copiar al portapapeles</p>
-        <div class="stats-badge" id="statsBadge">⚡ Cargando base de datos...</div>
+<div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+        <div class="login-icon">🔐</div>
+        <h2>ServiComp+</h2>
+        <p>Ingresa la clave de acceso</p>
+        <input type="password" id="loginPass" class="login-input" placeholder="Clave de acceso" autocomplete="off" maxlength="6">
+        <button class="login-btn" id="loginBtn">Acceder</button>
+        <div class="error-msg" id="errorMsg">❌ Clave incorrecta</div>
     </div>
+</div>
 
-    <div class="credenciales" id="credencialesContainer">
-        <div class="status-msg">📡 Sincronizando credenciales...</div>
+<div class="main-content" id="mainContent">
+    <div class="container">
+        <div class="header">
+            <div class="avatar">🔐</div>
+            <h1>Vault Pro · Credenciales</h1>
+            <p>Haz clic sobre cualquier ícono para copiar al portapapeles (máxima discreción)</p>
+            <div class="stats-badge" id="statsBadge">⚡ Cargando base de datos...</div>
+        </div>
+
+        <div class="credenciales" id="credencialesContainer">
+            <div class="status-msg">📡 Sincronizando credenciales...</div>
+        </div>
     </div>
 </div>
 
 <div class="toast" id="toast">
-    <span>📋</span> <span id="toastMessage">Copiado</span>
+    <span>✓</span> <span id="toastMessage">Copiado</span>
 </div>
 
 <script>
 (() => {
-    // CONFIGURACIÓN: misma hoja de cálculo con columnas: id, titulo, usuario, clave, serial, pin
+    // ==================== LOGIN ====================
+    function getCurrentDatePassword() {
+        const hoy = new Date();
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const año = String(hoy.getFullYear()).slice(-2);
+        return `${dia}${mes}${año}`;
+    }
+
+    const CLAVE_CORRECTA = getCurrentDatePassword();
+
+    const loginOverlay = document.getElementById('loginOverlay');
+    const mainContent = document.getElementById('mainContent');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginPass = document.getElementById('loginPass');
+    const errorMsg = document.getElementById('errorMsg');
+
+    function verificarLogin() {
+        const pass = loginPass.value.trim();
+        
+        if (pass === CLAVE_CORRECTA) {
+            loginOverlay.style.display = 'none';
+            mainContent.style.display = 'block';
+            iniciarApp();
+        } else {
+            errorMsg.style.display = 'block';
+            setTimeout(() => {
+                errorMsg.style.display = 'none';
+            }, 2000);
+            loginPass.value = '';
+            loginPass.focus();
+        }
+    }
+
+    loginBtn.addEventListener('click', verificarLogin);
+    loginPass.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') verificarLogin();
+    });
+
+    // ==================== APP ====================
     const CONFIG = {
         SHEET_ID: "1QsFpbKZbFb2NOyvoYQjDmfj9Ksmzu0E7TuCkZCXgoV4",
         SHEET_NAME: "key"
@@ -291,6 +449,21 @@
         statsBadge: document.getElementById("statsBadge")
     };
 
+    let toastTimeout = null;
+
+    function showToastDiscreto(message, isError = false) {
+        if (toastTimeout) clearTimeout(toastTimeout);
+        
+        DOM.toastMessage.innerText = message;
+        DOM.toast.style.background = isError ? '#dc2626' : '#10b981';
+        DOM.toast.style.borderColor = isError ? '#ef4444' : '#10b981';
+        DOM.toast.classList.add('show');
+        
+        toastTimeout = setTimeout(() => {
+            DOM.toast.classList.remove('show');
+        }, 1200);
+    }
+
     function escapeHTML(str) {
         if (!str) return '';
         return String(str).replace(/[&<>'"]/g, 
@@ -298,39 +471,19 @@
         );
     }
 
-    function showToast(message, isError = false) {
-        DOM.toastMessage.innerText = message;
-        DOM.toast.style.background = isError ? '#7f1a1a' : '#1e293b';
-        DOM.toast.style.borderColor = isError ? '#ef4444' : '#3b82f6';
-        DOM.toast.style.display = "flex";
-        setTimeout(() => {
-            DOM.toast.style.display = "none";
-        }, 1800);
-    }
-
     async function copyToClipboard(text, fieldName) {
         if (!text || text.trim() === "") {
-            showToast(`⚠️ ${fieldName} vacío`, true);
+            showToastDiscreto(`⚠️ Campo vacío`, true);
             return;
         }
         try {
             await navigator.clipboard.writeText(text);
-            const preview = text.length > 25 ? text.substring(0, 22) + '…' : text;
-            showToast(`✅ ${fieldName} copiado: ${preview}`);
+            showToastDiscreto(`✓ ${fieldName} copiado al portapapeles`);
         } catch (err) {
-            showToast(`❌ Error al copiar ${fieldName}`, true);
+            showToastDiscreto(`✗ Error al copiar`, true);
         }
     }
 
-    // Función para generar preview según el tipo de campo
-    function getPreview(value, fieldType) {
-        if (!value) return '';
-        if (fieldType === 'clave') return '••••••';
-        if (value.length > 12) return value.substring(0, 10) + '…';
-        return value;
-    }
-
-    // Obtener icono según el campo
     function getFieldIcon(fieldType) {
         const icons = {
             'usuario': '👤',
@@ -341,7 +494,6 @@
         return icons[fieldType] || '📄';
     }
 
-    // Obtener label legible
     function getFieldLabel(fieldType) {
         const labels = {
             'usuario': 'Usuario',
@@ -352,7 +504,17 @@
         return labels[fieldType] || fieldType;
     }
 
-    // Renderizar solo los campos NO VACÍOS
+    // Para usuario se podría mostrar un preview parcial, pero por discreción total solo mostramos placeholder.
+    // Sin embargo, para Usuario es poco sensible, así que mostramos "Click para copiar"
+    // El resto: solo placeholder sin ningún preview.
+    function getPlaceholder(fieldType) {
+        if (fieldType === 'usuario') return '👤 Copiar';
+        if (fieldType === 'clave') return '••••••';
+        if (fieldType === 'serial') return '######';
+        if (fieldType === 'pin') return '****';
+        return 'Copiar';
+    }
+
     function renderizarTodo() {
         if (!registros.length) {
             DOM.container.innerHTML = `<div class="status-msg">🔐 No hay credenciales disponibles o error en los datos.</div>`;
@@ -371,42 +533,36 @@
             else if (tituloLower.includes('adobe')) iconoPrincipal = "🎨";
             else if (tituloLower.includes('win')) iconoPrincipal = "🪟";
             
-            // Definir campos con sus valores (solo si tienen contenido)
             const campos = [];
             
             if (item.usuario && item.usuario.trim() !== "") {
                 campos.push({
                     tipo: 'usuario',
-                    valor: item.usuario,
-                    preview: getPreview(item.usuario, 'usuario')
+                    valor: item.usuario
                 });
             }
             
             if (item.clave && item.clave.trim() !== "") {
                 campos.push({
                     tipo: 'clave',
-                    valor: item.clave,
-                    preview: getPreview(item.clave, 'clave')
+                    valor: item.clave
                 });
             }
             
             if (item.serial && item.serial.trim() !== "") {
                 campos.push({
                     tipo: 'serial',
-                    valor: item.serial,
-                    preview: getPreview(item.serial, 'serial')
+                    valor: item.serial
                 });
             }
             
             if (item.pin && item.pin.trim() !== "") {
                 campos.push({
                     tipo: 'pin',
-                    valor: item.pin,
-                    preview: getPreview(item.pin, 'pin')
+                    valor: item.pin
                 });
             }
 
-            // Si no hay ningún campo con datos, mostrar mensaje
             if (campos.length === 0) {
                 return `
                     <div class="card" data-id="${escapeHTML(item.id)}">
@@ -426,12 +582,11 @@
                 `;
             }
 
-            // Generar los items de campos (solo los que tienen datos)
             const fieldsHtml = campos.map(campo => `
                 <div class="field-item" data-field="${campo.tipo}" data-value="${escapeHTML(campo.valor)}">
                     <div class="field-icon">${getFieldIcon(campo.tipo)}</div>
                     <div class="field-label">${getFieldLabel(campo.tipo)}</div>
-                    <div class="field-value-preview">${escapeHTML(campo.preview)}</div>
+                    <div class="field-placeholder">${getPlaceholder(campo.tipo)}</div>
                 </div>
             `).join('');
 
@@ -456,7 +611,6 @@
 
         DOM.container.innerHTML = html;
 
-        // Añadir event listeners solo a los field-item existentes
         const fieldItems = document.querySelectorAll('.field-item');
         fieldItems.forEach(item => {
             const value = item.dataset.value;
@@ -467,7 +621,7 @@
                 if (value && value.trim() !== "") {
                     copyToClipboard(value, getFieldLabel(fieldName));
                 } else {
-                    showToast(`⚠️ Campo vacío`, true);
+                    showToastDiscreto(`⚠️ Campo vacío`, true);
                 }
             });
         });
@@ -526,11 +680,9 @@
         }
     }
 
-    function init() {
+    function iniciarApp() {
         cargarDatos();
     }
-
-    init();
 })();
 </script>
 </body>
