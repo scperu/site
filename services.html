@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📋 Servicomp+ · Gestión de Servicios</title>
+    <style>
+        /* ===== RESET Y BASE ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: #f5f7fc;
+            padding: 20px;
+            color: #1e293b;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            padding: 24px 28px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        /* ===== HEADER CON LOGO ===== */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .header img {
+            height: 60px;
+            width: auto;
+            border-radius: 8px;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header .subtitle {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-left: auto;
+        }
+
+        .status {
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .status .badge {
+            background: #2563eb;
+            color: white;
+            padding: 2px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        /* ===== FORMULARIO ===== */
+        .form-section {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+        }
+        .form-section h2 {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #475569;
+        }
+        .form-group input,
+        .form-group select {
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            background: white;
+            transition: 0.2s;
+            width: 100%;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        /* ===== BOTONES ===== */
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #15803d;
+        }
+        .btn-info {
+            background: #0ea5e9;
+            color: white;
+        }
+        .btn-info:hover {
+            background: #0284c7;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* ===== TABLA ===== */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 600px;
+        }
+        thead {
+            background: #f1f5f9;
+        }
+        th {
+            text-align: left;
+            padding: 14px 16px;
+            font-weight: 600;
+            color: #334155;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        tr:hover td {
+            background: #fafcff;
+        }
+        .empty-row td {
+            padding: 40px 16px;
+            text-align: center;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: white;
+            border-radius: 24px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 28px 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+        }
+        .modal-header h2 {
+            font-size: 1.5rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: 0.2s;
+        }
+        .modal-close:hover {
+            color: #1e293b;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .stat-card .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.5px;
+        }
+        .modal-table-wrapper {
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+        .modal-table-wrapper table {
+            font-size: 0.85rem;
+            min-width: 400px;
+        }
+        .modal-table-wrapper th {
+            background: #f1f5f9;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .container {
+                padding: 16px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .form-actions .btn {
+                justify-content: center;
+            }
+            .toolbar {
+                flex-direction: column;
+            }
+            .toolbar .btn {
+                justify-content: center;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header .subtitle {
+                margin-left: 0;
+            }
+            th,
+            td {
+                padding: 10px 12px;
+                font-size: 0.8rem;
+            }
+            .status {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .modal {
+                padding: 20px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #0f172a;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 40px;
+            font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            transition: 0.3s;
+            transform: translateY(80px);
+            opacity: 0;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HEADER CON LOGO -->
+        <div class="header">
+            <img src="logo.png" alt="Servicomp+" onerror="this.style.display='none'" />
+            <h1>📋 Servicomp+</h1>
+            <span class="subtitle">Gestión de Servicios</span>
+        </div>
+
+        <!-- Estado -->
+        <div class="status" id="statusBar">
+            <span>🔍 <span id="statusText">Cargando datos...</span></span>
+            <span class="badge" id="rowCount">0 servicios</span>
+        </div>
+
+        <!-- Barra de herramientas -->
+        <div class="toolbar">
+            <button class="btn btn-info" id="reportBtn">📊 Informe Detallado</button>
+            <button class="btn btn-success" id="refreshBtn">🔄 Actualizar</button>
+        </div>
+
+        <!-- Formulario de registro -->
+        <div class="form-section">
+            <h2>✏️ Agregar servicio</h2>
+            <form id="dataForm">
+                <div class="form-grid" id="formFields">
+                    <!-- Los campos se generan con JS -->
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">➕ Registrar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla de servicios -->
+        <div class="table-wrapper">
+            <table id="dataTable">
+                <thead id="tableHead">
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Descripción</th>
+                        <th>Inversión</th>
+                        <th>Venta</th>
+                        <th>Cliente</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr class="empty-row"><td colspan="6">No hay servicios registrados</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== MODAL INFORME ===== -->
+    <div class="modal-overlay" id="reportModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📊 Informe Detallado</h2>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <div id="reportContent">
+                <!-- Se llena con JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================
+        // 🔧 CONFIGURACIÓN
+        // ============================
+        const SHEET_ID = '1CnR6YNmJKuUY5nVsbAYTLCoAQU0ftOAGbH2UZOSls5I'; // ID de tu hoja de servicios
+        const SHEET_NAME = 'servicios'; // Nombre de la pestaña (debe existir)
+        const WRITE_URL = 'https://script.google.com/macros/s/AKfycbzxXmi3bPtXGY8iULT_c5rWezLo0hPk2z4YKJ6a1k7bvmvF3LELgaSbuA4KuayOscpWQw/exec'; // URL de tu web app
+
+        // ============================
+        // 🚀 CÓDIGO PRINCIPAL
+        // ============================
+        let allData = [];
+        const READ_URL = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
+
+        // DOM
+        const statusText = document.getElementById('statusText');
+        const rowCount = document.getElementById('rowCount');
+        const form = document.getElementById('dataForm');
+        const formFields = document.getElementById('formFields');
+        const submitBtn = document.getElementById('submitBtn');
+        const tableBody = document.getElementById('tableBody');
+        const toast = document.getElementById('toast');
+        const reportBtn = document.getElementById('reportBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const reportModal = document.getElementById('reportModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const reportContent = document.getElementById('reportContent');
+
+        let toastTimeout;
+
+        // ============================
+        // UTILITIES
+        // ============================
+        function showToast(msg, duration = 3000) {
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), duration);
+        }
+
+        function setStatus(text, isLoading = false) {
+            statusText.textContent = text;
+            document.querySelector('.container').classList.toggle('loading', isLoading);
+        }
+
+        function updateRowCount() {
+            rowCount.textContent = `${allData.length} servicios`;
+        }
+
+        // ============================
+        // LEER DATOS
+        // ============================
+        async function fetchData() {
+            try {
+                setStatus('Descargando datos...', true);
+                const res = await fetch(READ_URL);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+
+                if (!data || data.length === 0) {
+                    allData = [];
+                    setStatus('Sin datos', false);
+                    renderTable();
+                    return;
+                }
+
+                allData = data;
+                setStatus(`✅ ${allData.length} servicios cargados`, false);
+                renderTable();
+                updateRowCount();
+            } catch (err) {
+                console.error('Error al leer:', err);
+                setStatus('❌ Error al cargar datos', false);
+                showToast('Error al leer la hoja: ' + err.message, 5000);
+            }
+        }
+
+        // ============================
+        // RENDERIZAR TABLA
+        // ============================
+        function renderTable() {
+            if (allData.length === 0) {
+                tableBody.innerHTML = `<tr class="empty-row"><td colspan="6">No hay servicios registrados</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            allData.forEach(row => {
+                // Formatear fecha si existe
+                let fecha = row.fecha || '';
+                if (fecha) {
+                    try {
+                        const d = new Date(fecha);
+                        if (!isNaN(d)) fecha = d.toLocaleDateString('es-ES');
+                    } catch (e) {}
+                }
+                html += `<tr>
+                            <td>${row.id || ''}</td>
+                            <td>${fecha}</td>
+                            <td>${row.descripcion || ''}</td>
+                            <td>${row.inversion || ''}</td>
+                            <td>${row.venta || ''}</td>
+                            <td>${row.cliente || ''}</td>
+                        </tr>`;
+            });
+            tableBody.innerHTML = html;
+        }
+
+        // ============================
+        // CONSTRUIR FORMULARIO (con fecha actual por defecto)
+        // ============================
+        function buildFormFields() {
+            // Obtener fecha actual en formato YYYY-MM-DD
+            const hoy = new Date();
+            const fechaActual = hoy.getFullYear() + '-' +
+                String(hoy.getMonth() + 1).padStart(2, '0') + '-' +
+                String(hoy.getDate()).padStart(2, '0');
+
+            // Definimos los campos del formulario (sin id, que se autogenera)
+            const campos = [
+                { name: 'fecha', label: 'Fecha', type: 'date', value: fechaActual },
+                { name: 'descripcion', label: 'Descripción', type: 'text' },
+                { name: 'inversion', label: 'Inversión', type: 'number', step: '0.01' },
+                { name: 'venta', label: 'Venta', type: 'number', step: '0.01' },
+                { name: 'cliente', label: 'Cliente', type: 'text' }
+            ];
+
+            let html = '';
+            campos.forEach(campo => {
+                const valueAttr = campo.value ? `value="${campo.value}"` : '';
+                html += `
+                        <div class="form-group">
+                            <label for="field_${campo.name}">${campo.label}</label>
+                            <input type="${campo.type}" id="field_${campo.name}" name="${campo.name}" 
+                                   step="${campo.step || ''}" ${valueAttr} ${campo.type === 'date' ? '' : 'required'} />
+                        </div>
+                    `;
+            });
+            formFields.innerHTML = html;
+        }
+
+        // ============================
+        // ENVIAR REGISTRO
+        // ============================
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const payload = {
+                fecha: formData.get('fecha') || '',
+                descripcion: formData.get('descripcion') || '',
+                inversion: formData.get('inversion') || '',
+                venta: formData.get('venta') || '',
+                cliente: formData.get('cliente') || ''
+            };
+
+            try {
+                setStatus('Registrando...', true);
+                submitBtn.disabled = true;
+
+                await fetch(WRITE_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'add', sheetName: SHEET_NAME, row: payload }),
+                });
+
+                showToast('✅ Servicio registrado (espera unos segundos...)', 4000);
+                form.reset();
+                // Volver a poner la fecha actual después de reset
+                const hoy = new Date();
+                const fechaActual = hoy.getFullYear() + '-' +
+                    String(hoy.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(hoy.getDate()).padStart(2, '0');
+                document.getElementById('field_fecha').value = fechaActual;
+
+                setTimeout(() => {
+                    fetchData();
+                }, 2000);
+
+            } catch (err) {
+                console.error('Error en POST:', err);
+                showToast('❌ Error al registrar: ' + err.message, 5000);
+                setStatus('❌ Error en envío', false);
+            } finally {
+                submitBtn.disabled = false;
+                setStatus('Listo', false);
+            }
+        });
+
+        // ============================
+        // INFORME DETALLADO (MODAL)
+        // ============================
+        function generarInforme() {
+            if (allData.length === 0) {
+                reportContent.innerHTML =
+                `<p style="text-align:center;color:#94a3b8;padding:40px 0;">No hay servicios para mostrar.</p>`;
+                return;
+            }
+
+            // Estadísticas
+            const total = allData.length;
+            const totalInversion = allData.reduce((sum, p) => sum + (parseFloat(p.inversion) || 0), 0);
+            const totalVenta = allData.reduce((sum, p) => sum + (parseFloat(p.venta) || 0), 0);
+            const gananciaTotal = totalVenta - totalInversion;
+            const gananciaPromedio = total > 0 ? (gananciaTotal / total) : 0;
+
+            // Servicio con mayor venta
+            let mayorVenta = 0,
+                servicioMayor = '';
+            allData.forEach(p => {
+                const venta = parseFloat(p.venta) || 0;
+                if (venta > mayorVenta) {
+                    mayorVenta = venta;
+                    servicioMayor = p.descripcion || 'N/A';
+                }
+            });
+
+            // Cliente más frecuente
+            const clienteCount = {};
+            allData.forEach(p => {
+                const cli = p.cliente || 'Sin cliente';
+                clienteCount[cli] = (clienteCount[cli] || 0) + 1;
+            });
+            let maxCli = '',
+                maxCount = 0;
+            for (const [cli, count] of Object.entries(clienteCount)) {
+                if (count > maxCount) { maxCount = count;
+                    maxCli = cli; }
+            }
+
+            let html = `
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="number">${total}</div><div class="label">Total Servicios</div></div>
+                        <div class="stat-card"><div class="number">S/ ${totalInversion.toFixed(2)}</div><div class="label">Inversión Total</div></div>
+                        <div class="stat-card"><div class="number">S/ ${totalVenta.toFixed(2)}</div><div class="label">Venta Total</div></div>
+                        <div class="stat-card"><div class="number">S/ ${gananciaTotal.toFixed(2)}</div><div class="label">Ganancia Total</div></div>
+                        <div class="stat-card"><div class="number">S/ ${gananciaPromedio.toFixed(2)}</div><div class="label">Ganancia Promedio</div></div>
+                        <div class="stat-card"><div class="number">${servicioMayor}</div><div class="label">Servicio más caro (S/ ${mayorVenta.toFixed(2)})</div></div>
+                        <div class="stat-card"><div class="number">${maxCli}</div><div class="label">Cliente más frecuente (${maxCount})</div></div>
+                    </div>
+                    <h3 style="margin: 20px 0 12px;">📋 Lista completa de servicios</h3>
+                    <div class="modal-table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th>Inversión</th>
+                                    <th>Venta</th>
+                                    <th>Cliente</th>
+                                    <th>Ganancia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+            allData.forEach(p => {
+                const inversion = parseFloat(p.inversion) || 0;
+                const venta = parseFloat(p.venta) || 0;
+                const ganancia = venta - inversion;
+                let fecha = p.fecha || '';
+                if (fecha) {
+                    try {
+                        const d = new Date(fecha);
+                        if (!isNaN(d)) fecha = d.toLocaleDateString('es-ES');
+                    } catch (e) {}
+                }
+                html += `
+                            <tr>
+                                <td>${p.id || ''}</td>
+                                <td>${fecha}</td>
+                                <td>${p.descripcion || ''}</td>
+                                <td>S/ ${inversion.toFixed(2)}</td>
+                                <td>S/ ${venta.toFixed(2)}</td>
+                                <td>${p.cliente || ''}</td>
+                                <td>S/ ${ganancia.toFixed(2)}</td>
+                            </tr>
+                        `;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+            reportContent.innerHTML = html;
+        }
+
+        // ============================
+        // EVENTOS DEL MODAL
+        // ============================
+        reportBtn.addEventListener('click', () => {
+            generarInforme();
+            reportModal.classList.add('active');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            reportModal.classList.remove('active');
+        });
+
+        reportModal.addEventListener('click', (e) => {
+            if (e.target === reportModal) {
+                reportModal.classList.remove('active');
+            }
+        });
+
+        // ============================
+        // REFRESCAR DATOS
+        // ============================
+        refreshBtn.addEventListener('click', fetchData);
+
+        // ============================
+        // INICIO
+        // ============================
+        (function init() {
+            buildFormFields();
+            if (!SHEET_ID || SHEET_ID === '') {
+                setStatus('⚠️ Configura SHEET_ID en el código', false);
+                showToast('⚠️ Configura SHEET_ID', 6000);
+                return;
+            }
+            if (!WRITE_URL || WRITE_URL.includes('TU_SCRIPT_ID')) {
+                setStatus('⚠️ Configura WRITE_URL (URL del script)', false);
+                showToast('⚠️ Configura WRITE_URL con la URL de tu web app', 6000);
+            }
+            fetchData();
+        })();
+    </script>
+</body>
+</html>
